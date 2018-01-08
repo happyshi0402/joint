@@ -512,12 +512,13 @@ joint.dia.LinkView = joint.dia.CellView.extend({
                     text: {
                         textAnchor: 'middle',
                         fontSize: 14,
+                        fill: '#000000',
                         pointerEvents: 'none',
                         yAlignment: 'middle'
                     },
                     rect: {
                         ref: 'text',
-                        fill: 'white',
+                        fill: '#ffffff',
                         rx: 3,
                         ry: 3,
                         refWidth: 1,
@@ -1344,10 +1345,10 @@ joint.dia.LinkView = joint.dia.CellView.extend({
 
             } else if (paperOptions.linkConnectionPoint) {
 
-                var view = end === 'target' ? this.targetView : this.sourceView;
-                var magnet = end === 'target' ? this.targetMagnet : this.sourceMagnet;
+                var view = (end === 'target') ? this.targetView : this.sourceView;
+                var magnet = (end === 'target') ? this.targetMagnet : this.sourceMagnet;
 
-                spot = paperOptions.linkConnectionPoint(this, view, magnet, reference);
+                spot = paperOptions.linkConnectionPoint(this, view, magnet, reference, end);
 
             } else {
 

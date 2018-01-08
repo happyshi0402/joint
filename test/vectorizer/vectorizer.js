@@ -15,6 +15,7 @@ QUnit.module('vectorizer', function(hooks) {
     var svgGroup2;
     var svgGroup3;
     var svgPath2;
+    var svgPath3;
 
     var childrenTagNames = function(vel) {
         var tagNames = [];
@@ -41,7 +42,8 @@ QUnit.module('vectorizer', function(hooks) {
                             '<path id="svg-path-2" d="M 100 100 C 100 100 0 150 100 200 Z"/>' +
                         '</g>' +
                     '</g>' +
-                '</g>';
+                '</g>' +
+                '<path id="svg-path-3"/>';
 
         $fixture.append(V('svg', { id: 'svg-container' }, V(svgContent)).node);
 
@@ -57,6 +59,7 @@ QUnit.module('vectorizer', function(hooks) {
         svgGroup2 = document.getElementById('svg-group-2');
         svgGroup3 = document.getElementById('svg-group-3');
         svgPath2 = document.getElementById('svg-path-2');
+        svgPath3 = document.getElementById('svg-path-3');
     });
 
     function serializeNode(node) {
@@ -123,6 +126,43 @@ QUnit.module('vectorizer', function(hooks) {
         // nodes in a group
         assert.equal(V(svgEllipse).index(), 0, 'The first node in the group has index 0.');
         assert.equal(V(svgCircle).index(), 1, 'The second node in the group has index 1.');
+    });
+
+    QUnit.module('tagName()', function() {
+
+        QUnit.test('sanity', function(assert) {
+
+            assert.equal(typeof V(svgContainer).tagName(), 'string');
+            assert.equal(typeof V(svgPath).tagName(), 'string');
+            assert.equal(typeof V(svgGroup).tagName(), 'string');
+            assert.equal(typeof V(svgCircle).tagName(), 'string');
+            assert.equal(typeof V(svgEllipse).tagName(), 'string');
+            assert.equal(typeof V(svgPolygon).tagName(), 'string');
+            assert.equal(typeof V(svgText).tagName(), 'string');
+            assert.equal(typeof V(svgRectangle).tagName(), 'string');
+            assert.equal(typeof V(svgGroup1).tagName(), 'string');
+            assert.equal(typeof V(svgGroup2).tagName(), 'string');
+            assert.equal(typeof V(svgGroup3).tagName(), 'string');
+            assert.equal(typeof V(svgPath2).tagName(), 'string');
+            assert.equal(typeof V(svgPath3).tagName(), 'string');
+        });
+
+        QUnit.test('correctness', function(assert) {
+
+            assert.equal(V(svgContainer).tagName(), 'SVG');
+            assert.equal(V(svgPath).tagName(), 'PATH');
+            assert.equal(V(svgGroup).tagName(), 'G');
+            assert.equal(V(svgCircle).tagName(), 'CIRCLE');
+            assert.equal(V(svgEllipse).tagName(), 'ELLIPSE');
+            assert.equal(V(svgPolygon).tagName(), 'POLYGON');
+            assert.equal(V(svgText).tagName(), 'TEXT');
+            assert.equal(V(svgRectangle).tagName(), 'RECT');
+            assert.equal(V(svgGroup1).tagName(), 'G');
+            assert.equal(V(svgGroup2).tagName(), 'G');
+            assert.equal(V(svgGroup3).tagName(), 'G');
+            assert.equal(V(svgPath2).tagName(), 'PATH');
+            assert.equal(V(svgPath3).tagName(), 'PATH');
+        });
     });
 
 
@@ -1024,6 +1064,153 @@ QUnit.module('vectorizer', function(hooks) {
             assert.equal(V(svgGroup3).getBBox({ recursive: true }).toString(), V(svgPath2).getBBox({ recursive: true }).toString());
             assert.equal(V(svgGroup3).getBBox({ target: svgGroup1, recursive: true }).toString(), V(svgPath2).getBBox({ target: svgGroup1 }).toString());
             assert.equal(V(svgGroup3).getBBox({ target: svgGroup1, recursive: true }).toString(), V(svgPath2).getBBox({ target: svgGroup1, recursive: true }).toString());
+        });
+    });
+
+    QUnit.module('normalizePath()', function() {
+
+        QUnit.test('sanity', function(assert) {
+
+            assert.ok(V(svgPath).normalizePath() instanceof V);
+            assert.ok(V(svgPath2).normalizePath() instanceof V);
+            assert.ok(V(svgPath3).normalizePath() instanceof V);
+
+            assert.ok(V(svgContainer).normalizePath() instanceof V);
+            assert.ok(V(svgGroup).normalizePath() instanceof V);
+            assert.ok(V(svgCircle).normalizePath() instanceof V);
+            assert.ok(V(svgEllipse).normalizePath() instanceof V);
+            assert.ok(V(svgPolygon).normalizePath() instanceof V);
+            assert.ok(V(svgText).normalizePath() instanceof V);
+            assert.ok(V(svgRectangle).normalizePath() instanceof V);
+            assert.ok(V(svgGroup1).normalizePath() instanceof V);
+            assert.ok(V(svgGroup2).normalizePath() instanceof V);
+            assert.ok(V(svgGroup3).normalizePath() instanceof V);
+        });
+
+        QUnit.test('normalizations', function(assert) {
+
+            assert.equal(V(svgPath).normalizePath().node.hasAttribute('d'), true);
+            assert.equal(V(svgPath2).normalizePath().node.hasAttribute('d'), true);
+            assert.equal(V(svgPath3).normalizePath().node.hasAttribute('d'), true);
+
+            assert.equal(V(svgPath).normalizePath().attr('d'), 'M 10 10');
+            assert.equal(V(svgPath2).normalizePath().attr('d'), 'M 100 100 C 100 100 0 150 100 200 Z');
+            assert.equal(V(svgPath3).normalizePath().attr('d'), 'M 0 0');
+        });
+
+        QUnit.test('silent failures', function(assert) {
+
+            assert.equal(V(svgContainer).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgGroup).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgCircle).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgEllipse).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgPolygon).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgText).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgRectangle).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgGroup1).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgGroup2).normalizePath().node.hasAttribute('d'), false);
+            assert.equal(V(svgGroup3).normalizePath().node.hasAttribute('d'), false);
+        });
+    });
+
+    QUnit.module('normalizePathData()', function() {
+
+        QUnit.test('sanity', function(assert) {
+
+            // normalizations
+            assert.equal(typeof V.normalizePathData('M 10 10 H 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 V 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 20 C 10 10 25 10 25 20 S 40 30 40 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 20 20 Q 40 0 60 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 20 20 Q 40 0 60 20 T 100 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 30 15 A 15 15 0 0 0 15 30'), 'string');
+
+            assert.equal(typeof V.normalizePathData('m 10 10'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 m 10 10'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 l 10 10'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 c 0 10 10 10 10 0'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 z'), 'string');
+
+            assert.equal(typeof V.normalizePathData('M 10 10 20 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 L 20 20 30 30'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 C 10 20 20 20 20 10 20 0 30 0 30 10'), 'string');
+
+            // edge cases
+            assert.equal(typeof V.normalizePathData('L 10 10'), 'string');
+            assert.equal(typeof V.normalizePathData('C 0 10 10 10 10 0'), 'string');
+            assert.equal(typeof V.normalizePathData('Z'), 'string');
+
+            assert.equal(typeof V.normalizePathData('M 10 10 Z L 20 20'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 Z C 10 20 20 20 20 10'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 Z Z'), 'string');
+
+            assert.equal(typeof V.normalizePathData(''), 'string');
+            assert.equal(typeof V.normalizePathData('X'), 'string');
+
+            assert.equal(typeof V.normalizePathData('M'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10'), 'string');
+            assert.equal(typeof V.normalizePathData('M 10 10 20'), 'string');
+
+            assert.equal(typeof V.normalizePathData('X M 10 10'), 'string');
+            assert.equal(typeof V.normalizePathData('X M 10 10 X L 20 20'), 'string');
+        });
+
+        QUnit.test('normalizations', function(assert) {
+
+            assert.equal(V.normalizePathData('M 10 10 H 20'), 'M 10 10 L 20 10');
+            assert.equal(V.normalizePathData('M 10 10 V 20'), 'M 10 10 L 10 20');
+            assert.equal(V.normalizePathData('M 10 20 C 10 10 25 10 25 20 S 40 30 40 20'), 'M 10 20 C 10 10 25 10 25 20 C 25 30 40 30 40 20');
+            assert.equal(V.normalizePathData('M 20 20 Q 40 0 60 20'), 'M 20 20 C 33.33333333333333 6.666666666666666 46.666666666666664 6.666666666666666 60 20');
+            assert.equal(V.normalizePathData('M 20 20 Q 40 0 60 20 T 100 20'), 'M 20 20 C 33.33333333333333 6.666666666666666 46.666666666666664 6.666666666666666 60 20 C 73.33333333333333 33.33333333333333 86.66666666666666 33.33333333333333 100 20');
+            assert.equal(V.normalizePathData('M 30 15 A 15 15 0 0 0 15 30'), 'M 30 15 C 21.715728752538098 15.000000000000002 14.999999999999998 21.715728752538098 15 30');
+
+            assert.equal(V.normalizePathData('m 10 10'), 'M 10 10');
+            assert.equal(V.normalizePathData('M 10 10 m 10 10'), 'M 10 10 M 20 20');
+            assert.equal(V.normalizePathData('M 10 10 l 10 10'), 'M 10 10 L 20 20');
+            assert.equal(V.normalizePathData('M 10 10 c 0 10 10 10 10 0'), 'M 10 10 C 10 20 20 20 20 10');
+            assert.equal(V.normalizePathData('M 10 10 z'), 'M 10 10 Z');
+
+            assert.equal(V.normalizePathData('M 10 10 20 20'), 'M 10 10 L 20 20');
+            assert.equal(V.normalizePathData('M 10 10 L 20 20 30 30'), 'M 10 10 L 20 20 L 30 30');
+            assert.equal(V.normalizePathData('M 10 10 C 10 20 20 20 20 10 20 0 30 0 30 10'), 'M 10 10 C 10 20 20 20 20 10 C 20 0 30 0 30 10');
+        });
+
+        QUnit.test('edge cases', function(assert) {
+
+            assert.equal(V.normalizePathData('L 10 10'), 'M 0 0 L 10 10');
+            assert.equal(V.normalizePathData('C 10 20 20 20 20 10'), 'M 0 0 C 10 20 20 20 20 10');
+            assert.equal(V.normalizePathData('Z'), 'M 0 0 Z');
+
+            assert.equal(V.normalizePathData('M 10 10 Z L 20 20'), 'M 10 10 Z L 20 20');
+            assert.equal(V.normalizePathData('M 10 10 Z C 10 20 20 20 20 10'), 'M 10 10 Z C 10 20 20 20 20 10');
+            assert.equal(V.normalizePathData('M 10 10 Z Z'), 'M 10 10 Z Z');
+
+            assert.equal(V.normalizePathData(''), 'M 0 0'); // empty string
+            assert.equal(V.normalizePathData('X'), 'M 0 0'); // invalid command
+
+            assert.equal(V.normalizePathData('M'), 'M 0 0'); // no arguments for a command that needs them
+            assert.equal(V.normalizePathData('M 10'), 'M 0 0'); // too few arguments
+            assert.equal(V.normalizePathData('M 10 10 20'), 'M 10 10'); // too many arguments
+
+            assert.equal(V.normalizePathData('X M 10 10'), 'M 10 10'); // mixing invalid and valid commands
+            assert.equal(V.normalizePathData('X M 10 10 X L 20 20'), 'M 10 10 L 20 20'); // invalid commands interspersed with valid commands
+        });
+
+        QUnit.test('path segment reconstruction', function(assert) {
+            var path1 = 'M 10 10';
+            var normalizedPath1 = V.normalizePathData(path1);
+            var reconstructedPath1 = g.Path(normalizedPath1).serialize();
+            assert.equal(normalizedPath1, reconstructedPath1);
+
+            var path2 = 'M 100 100 C 100 100 0 150 100 200 Z';
+            var normalizedPath2 = V.normalizePathData(path2);
+            var reconstructedPath2 = g.Path(normalizedPath2).serialize();
+            assert.equal(normalizedPath2, reconstructedPath2);
+
+            var path3 = 'M285.8,83V52.7h8.3v31c0,3.2-1,5.8-3,7.7c-2,1.9-4.4,2.8-7.2,2.8c-2.9,0-5.6-1.2-8.1-3.5l3.8-6.1c1.1,1.3,2.3,1.9,3.7,1.9c0.7,0,1.3-0.3,1.8-0.9C285.5,85,285.8,84.2,285.8,83z';
+            var normalizedPath3 = V.normalizePathData(path3);
+            var reconstructedPath3 = g.Path(normalizedPath3).serialize();
+            assert.equal(normalizedPath3, reconstructedPath3);
         });
     });
 

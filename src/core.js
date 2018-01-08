@@ -394,13 +394,14 @@ var joint = {
         breakText: function(text, size, styles, opt) {
 
             opt = opt || {};
+            styles = styles || {};
 
             var width = size.width;
             var height = size.height;
 
             var svgDocument = opt.svgDocument || V('svg').node;
-            var textElement = V('<text><tspan></tspan></text>').attr(styles || {}).node;
-            var textSpan = textElement.firstChild;
+            var textSpan = V('tspan').node;
+            var textElement = V('text').attr(styles).append(textSpan).node;
             var textNode = document.createTextNode('');
 
             // Prevent flickering
@@ -1304,7 +1305,8 @@ var joint = {
          */
         toggleFullScreen: function(el) {
 
-            el = el || window.top.document.body;
+            var topDocument = window.top.document;
+            el = el || topDocument.body;
 
             function prefixedResult(el, prop) {
 
@@ -1318,9 +1320,9 @@ var joint = {
                 }
             }
 
-            if (prefixedResult(document, 'FullscreenElement') || prefixedResult(document, 'FullScreenElement')) {
-                prefixedResult(document, 'ExitFullscreen') || // Spec.
-                prefixedResult(document, 'CancelFullScreen'); // Firefox
+            if (prefixedResult(topDocument, 'FullscreenElement') || prefixedResult(topDocument, 'FullScreenElement')) {
+                prefixedResult(topDocument, 'ExitFullscreen') || // Spec.
+                prefixedResult(topDocument, 'CancelFullScreen'); // Firefox
             } else {
                 prefixedResult(el, 'RequestFullscreen') || // Spec.
                 prefixedResult(el, 'RequestFullScreen'); // Firefox
